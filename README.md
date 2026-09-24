@@ -18,6 +18,7 @@
 
 ```bash
 ./gradlew :core:test            # core 单元测试
+./gradlew :core:koverVerify     # core 覆盖率 ≥ 80%
 ./gradlew detektMain            # 静态检查（含类型解析）
 ./gradlew :app:lintRelease      # Android Lint
 ./gradlew :app:assembleRelease  # release APK（未签名）

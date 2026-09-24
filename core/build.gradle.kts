@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 // enforces "core must not depend on Android" (design §5.2, §49).
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kover)
 }
 
 java {
@@ -20,4 +21,15 @@ kotlin {
 
 dependencies {
     testImplementation(libs.junit)
+}
+
+// M1 exit criterion: core coverage >= 80% (plan §1.1).
+kover {
+    reports {
+        verify {
+            rule {
+                minBound(80)
+            }
+        }
+    }
 }

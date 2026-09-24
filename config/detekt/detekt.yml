@@ -1,7 +1,7 @@
 # Project rules on top of detekt's default config (buildUponDefaultConfig = true).
-# Security rule (design §9, §55): no logging or console output that could leak secrets.
 
 style:
+  # Security rule (design §9, §55): no logging or console output that could leak secrets.
   ForbiddenImport:
     active: true
     imports:
@@ -23,6 +23,17 @@ style:
       - value: 'android.util.Log.e'
       - value: 'android.util.Log.wtf'
       - value: 'android.util.Log.println'
+  MagicNumber:
+    # A named property is exactly the fix MagicNumber asks for.
+    ignorePropertyDeclaration: true
+  ReturnCount:
+    # Validation code uses early `?: return fail(...)` guards on purpose.
+    active: false
+
+complexity:
+  LongParameterList:
+    # Domain models such as OtpUri legitimately carry seven fields.
+    constructorThreshold: 8
 
 naming:
   FunctionNaming:

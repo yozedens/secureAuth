@@ -1483,17 +1483,20 @@ throw IllegalArgumentException("bad secret: $input")
 
 ```kotlin
 sealed interface ParseError {
+    data object InvalidUri : ParseError                  // 超长（> 4096 字符）等结构性问题
     data object InvalidScheme : ParseError
     data object UnsupportedMigrationFormat : ParseError   // otpauth-migration://
     data object InvalidType : ParseError
     data object MissingSecret : ParseError
     data object DuplicateSecret : ParseError
-    data object InvalidSecret : ParseError               // 不含输入内容
+    data class InvalidSecret(val problem: SecretProblem) : ParseError  // 不含输入内容
     data object InvalidAlgorithm : ParseError
     data object InvalidDigits : ParseError
     data object InvalidPeriod : ParseError
     data object InvalidCounter : ParseError
 }
+
+enum class SecretProblem { EMPTY, INVALID_CHARACTER, LOOKALIKE_DIGIT, MISPLACED_PADDING, INVALID_LENGTH, TOO_LONG }
 
 // 以下为简写，成员形式同 ParseError
 sealed interface VaultError { KeyMissing; AuthenticationFailed; UnsupportedVersion; Io }

@@ -28,8 +28,8 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Unit tests (core)
-        run: ./gradlew :core:test
+      - name: Unit tests and coverage (core, >= 80%)
+        run: ./gradlew :core:test :core:koverVerify :core:koverLog
 
       - name: Static analysis (detekt with type resolution)
         run: ./gradlew detektMain
