@@ -91,6 +91,21 @@ class VaultRepository(
         }
     }
 
+    /**
+     * Deletes all accounts permanently ("clear all data and start over", design §26.1).
+     * The Keystore key is kept (ADR 0001 §3); the next [initialize] reuses it.
+     */
+    suspend fun reset(): VaultResult<Unit> = mutex.withLock {
+        val result = io { store.update { ByteArray(0) } }
+        if (result is VaultResult.Success) {
+            unlocked?.let { wipeAllExcept(it, keep = emptyList()) }
+            unlocked = null
+            _accounts.value = emptyList()
+            _state.value = VaultState.Uninitialized
+        }
+        result
+    }
+
     /** Drops and wipes all decrypted data (design §28). */
     suspend fun lock() = mutex.withLock {
         unlocked?.forEach { it.secret.wipe() }

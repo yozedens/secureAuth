@@ -8,7 +8,7 @@ import java.io.IOException
  */
 interface VaultStore {
 
-    /** The stored envelope bytes, or `null` if no vault has been created yet. */
+    /** The stored envelope bytes, or `null` if nothing is stored (an empty write means "nothing"). */
     @Throws(IOException::class)
     suspend fun read(): ByteArray?
 

@@ -254,6 +254,22 @@ class VaultRepositoryTest {
         assertEquals(VaultState.Unlocked, repo.refresh())
     }
 
+    @Test
+    fun resetDeletesAccountsAndReturnsToFirstLaunch() = runTest {
+        ok(repo.initialize())
+        ok(repo.add(draft()))
+        ok(repo.reset())
+        assertEquals(VaultState.Uninitialized, repo.state.value)
+        assertTrue(repo.accounts.value.isEmpty())
+        assertEquals(VaultState.Uninitialized, newRepo().refresh())
+        ok(repo.initialize())
+        assertTrue(repo.accounts.value.isEmpty())
+
+        store.failWrites = true
+        assertEquals(VaultResult.Failure(VaultError.Io), repo.reset())
+        assertEquals(VaultState.Unlocked, repo.state.value)
+    }
+
     private fun newRepo(cipher: AeadCipher = JvmAesGcmCipher(key)) =
         VaultRepository(store, cipher, clock, newId = { "id-${++ids}" })
 

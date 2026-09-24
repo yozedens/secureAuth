@@ -26,6 +26,8 @@ style:
   MagicNumber:
     # A named property is exactly the fix MagicNumber asks for.
     ignorePropertyDeclaration: true
+    # Enum entries such as AutoLockTimeout(30_000) name their values already.
+    ignoreEnums: true
   ReturnCount:
     # Validation code uses early `?: return fail(...)` guards on purpose.
     active: false

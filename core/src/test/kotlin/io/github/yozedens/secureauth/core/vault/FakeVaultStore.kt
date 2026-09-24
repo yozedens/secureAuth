@@ -12,7 +12,7 @@ class FakeVaultStore(var bytes: ByteArray? = null) : VaultStore {
 
     override suspend fun read(): ByteArray? {
         if (failReads) throw IOException("read failed")
-        return bytes?.copyOf()
+        return bytes?.takeIf { it.isNotEmpty() }?.copyOf()
     }
 
     override suspend fun update(transform: suspend (current: ByteArray?) -> ByteArray) {
