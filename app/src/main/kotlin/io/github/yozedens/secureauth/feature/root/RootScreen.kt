@@ -1,6 +1,7 @@
 package io.github.yozedens.secureauth.feature.root
 
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
@@ -8,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -28,7 +28,7 @@ import io.github.yozedens.secureauth.security.biometric.BiometricAuthenticator
 @Composable
 fun RootScreen(viewModel: AppViewModel, biometric: BiometricAuthenticator) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val activity = LocalContext.current as FragmentActivity
+    val activity = checkNotNull(LocalActivity.current) as FragmentActivity
     val biometricTitle = stringResource(R.string.biometric_title)
     val biometricNegative = stringResource(R.string.biometric_negative)
     val biometricAvailable = biometric.availability() == BiometricAuthenticator.Availability.AVAILABLE
@@ -81,7 +81,7 @@ private fun SettingsRoute(
     biometric: BiometricAuthenticator,
     biometricAvailable: Boolean,
 ) {
-    val activity = LocalContext.current as FragmentActivity
+    val activity = checkNotNull(LocalActivity.current) as FragmentActivity
     val biometricTitle = stringResource(R.string.biometric_title)
     val biometricNegative = stringResource(R.string.biometric_negative)
     BackHandler(onBack = viewModel::back)
