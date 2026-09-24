@@ -1,0 +1,30 @@
+# Project rules on top of detekt's default config (buildUponDefaultConfig = true).
+# Security rule (design §9, §55): no logging or console output that could leak secrets.
+
+style:
+  ForbiddenImport:
+    active: true
+    imports:
+      - value: 'android.util.Log'
+        reason: 'Logging is forbidden: secrets must never reach Logcat (design §55).'
+  ForbiddenMethodCall:
+    active: true
+    methods:
+      - value: 'kotlin.io.print'
+        reason: 'Console output is forbidden (design §55).'
+      - value: 'kotlin.io.println'
+        reason: 'Console output is forbidden (design §55).'
+      - value: 'java.lang.Throwable.printStackTrace'
+        reason: 'Stack traces go to Logcat (design §55).'
+      - value: 'android.util.Log.v'
+      - value: 'android.util.Log.d'
+      - value: 'android.util.Log.i'
+      - value: 'android.util.Log.w'
+      - value: 'android.util.Log.e'
+      - value: 'android.util.Log.wtf'
+      - value: 'android.util.Log.println'
+
+naming:
+  FunctionNaming:
+    # Compose functions are PascalCase.
+    ignoreAnnotated: ['Composable']
