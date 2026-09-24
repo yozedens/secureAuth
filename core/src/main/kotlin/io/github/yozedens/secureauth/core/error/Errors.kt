@@ -42,3 +42,28 @@ sealed interface ParseResult<out T> {
     data class Success<out T>(val value: T) : ParseResult<T>
     data class Failure(val error: ParseError) : ParseResult<Nothing>
 }
+
+/**
+ * Why the vault cannot be read or written (design §26.1). None of these may lead to
+ * the vault being overwritten or the key being regenerated automatically (ADR 0001 §7).
+ */
+sealed interface VaultError {
+    /** Key missing (restored from backup/transfer) or permanently unusable. */
+    data object KeyMissing : VaultError
+    /** Tag check failed: data or header modified, or the key does not match. */
+    data object AuthenticationFailed : VaultError
+    /** Not a vault envelope, or truncated. */
+    data object Corrupted : VaultError
+    /** Written by a newer app version. */
+    data object UnsupportedVersion : VaultError
+    /** Keystore error that may be temporary; retry is allowed. */
+    data object CryptoUnavailable : VaultError
+    /** File read/write failed; retry is allowed. */
+    data object Io : VaultError
+}
+
+/** Result of a vault operation. */
+sealed interface VaultResult<out T> {
+    data class Success<out T>(val value: T) : VaultResult<T>
+    data class Failure(val error: VaultError) : VaultResult<Nothing>
+}

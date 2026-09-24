@@ -789,7 +789,9 @@ sealed interface VaultState {
 |---|---|
 | `KeyMissing` | 从备份 / 换机恢复、部分机型 OTA 后 Keystore 异常 |
 | `AuthenticationFailed` | `AEADBadTagException`：密文被篡改或密钥不匹配 |
+| `Corrupted` | 不是 envelope 格式或被截断 |
 | `UnsupportedVersion` | 由更高版本 App 写入 |
+| `CryptoUnavailable` | Keystore 暂时性错误（可重试） |
 | `Io` | 读写失败（可重试） |
 
 `Unreadable` 状态下：
@@ -1500,7 +1502,7 @@ sealed interface ParseError {
 enum class SecretProblem { EMPTY, INVALID_CHARACTER, LOOKALIKE_DIGIT, MISPLACED_PADDING, INVALID_LENGTH, TOO_LONG }
 
 // 以下为简写，成员形式同 ParseError
-sealed interface VaultError { KeyMissing; AuthenticationFailed; UnsupportedVersion; Io }
+sealed interface VaultError { KeyMissing; AuthenticationFailed; Corrupted; UnsupportedVersion; CryptoUnavailable; Io }
 sealed interface AuthError  { WrongPin; RateLimited(untilMillis); BiometricUnavailable; Cancelled }
 sealed interface CameraError { PermissionDenied; PermissionPermanentlyDenied; Unavailable }
 ```
