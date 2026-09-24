@@ -714,7 +714,8 @@ KeyGenParameterSpec.Builder(alias, PURPOSE_ENCRYPT or PURPOSE_DECRYPT)
 要点：
 
 - 默认 `setRandomizedEncryptionRequired(true)`：加密时**不能自己传 IV**（会抛异常），应 `cipher.init(ENCRYPT_MODE, key)` 后读取 `cipher.iv`。
-- 可选加固（需真机验证兼容性）：`setIsStrongBoxBacked(true)`（捕获 `StrongBoxUnavailableException` 回退）、`setUnlockedDeviceRequired(true)`（API 28+）。
+- 优先使用 StrongBox：`setIsStrongBoxBacked(true)`，捕获 `StrongBoxUnavailableException` 后回退到普通 Keystore（ADR 0001）。
+- v0.1 **不开启** `setUnlockedDeviceRequired`：部分机型兼容性风险高，M6 真机测试后再评估（ADR 0001）。
 - 生成 / 获取密钥在后台线程，不在 `Application.onCreate` 中同步执行。
 - **只在"首次初始化"流程中生成密钥**；读取时发现密钥缺失，进入 `Unreadable` 状态（§26），**绝不**自动生成新密钥覆盖。
 
@@ -1768,6 +1769,7 @@ TOTP 本质是 HOTP + Time Counter，算法成本很低。但 HOTP 的真实成�
 | D6 | 存储加密位置 | Repository 层，DataStore 只存密文 | 避免明文常驻 DataStore 缓存；兼容未来 CryptoObject |
 | D7 | 模块划分 | `:core` 纯 JVM + `:app` | 编译期强制核心层不依赖 Android |
 | D8 | 鸿蒙支持范围 | 兼容鸿蒙 4.x（含 4.2）；不支持 HarmonyOS NEXT；侧载安装，不上架 | 个人自用；4.x 通过 Android 兼容层运行，现有设计已不依赖 GMS，无需额外代码 |
+| D9 | Keystore 参数与自动上锁 | 优先 StrongBox 并回退；不开启 `setUnlockedDeviceRequired`；自动上锁默认 1 分钟 | 见 `docs/adr/0001-lock-and-key-model.md` |
 
 参考：开源的 Aegis Authenticator 目标与本方案接近，其 `docs/vault.md` 的金库格式值得参考。Aegis 为 GPLv3，本项目为 MIT——只借鉴设计，不复制代码。
 
