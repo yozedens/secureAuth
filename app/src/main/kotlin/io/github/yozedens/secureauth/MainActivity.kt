@@ -4,14 +4,12 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import io.github.yozedens.secureauth.feature.root.AppViewModel
+import io.github.yozedens.secureauth.feature.root.RootScreen
 import io.github.yozedens.secureauth.ui.theme.SecureAuthTheme
 
 /**
@@ -28,16 +26,13 @@ class MainActivity : FragmentActivity() {
             WindowManager.LayoutParams.FLAG_SECURE,
         )
         enableEdgeToEdge()
+        val container = (application as SecureAuthApplication).container
         setContent {
             SecureAuthTheme {
-                Scaffold { padding ->
-                    Box(
-                        modifier = Modifier.fillMaxSize().padding(padding),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text("SecureAuth")
-                    }
-                }
+                val viewModel: AppViewModel = viewModel(
+                    factory = viewModelFactory { initializer { AppViewModel(container) } },
+                )
+                RootScreen(viewModel = viewModel, biometric = container.biometric)
             }
         }
     }

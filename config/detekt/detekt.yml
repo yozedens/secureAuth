@@ -28,6 +28,8 @@ style:
     ignorePropertyDeclaration: true
     # Enum entries such as AutoLockTimeout(30_000) name their values already.
     ignoreEnums: true
+    # Layout values such as 16.dp in Compose UI.
+    ignoreAnnotated: ['Composable', 'Preview']
   ReturnCount:
     # Validation code uses early `?: return fail(...)` guards on purpose.
     active: false
@@ -36,8 +38,8 @@ complexity:
   LongParameterList:
     # Domain models such as OtpUri legitimately carry seven fields.
     constructorThreshold: 8
-    # Serialization DTOs mirror the stored format field by field.
-    ignoreAnnotated: ['Serializable']
+    # Serialization DTOs mirror the stored format field by field; Compose screens take callbacks.
+    ignoreAnnotated: ['Serializable', 'Composable']
   TooManyFunctions:
     # Repositories expose one function per operation.
     thresholdInClasses: 16

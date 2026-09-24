@@ -63,6 +63,12 @@ dependencies {
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.datastore)
+    implementation(libs.androidx.biometric)
+    // On API < 28 BiometricPrompt shows its own dialog, which needs an AppCompat theme.
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.lifecycle.process)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.activity.compose)
     // BiometricPrompt requires a FragmentActivity (design §31).
     implementation(libs.androidx.fragment.ktx)

@@ -1,4 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SecureAuth</string>
+
+    <!-- Common -->
+    <string name="action_continue">继续</string>
+    <string name="action_cancel">取消</string>
+    <string name="action_confirm">确认</string>
+    <string name="action_retry">重试</string>
+    <string name="loading">加载中…</string>
+
+    <!-- Onboarding (design §32) -->
+    <string name="onboarding_title">欢迎使用 SecureAuth</string>
+    <string name="onboarding_local_only">所有数据只保存在这台手机上，不会联网、不会备份，也不会随换机迁移。</string>
+    <string name="onboarding_loss_risk">卸载 App、清除数据、恢复出厂设置或更换手机，都会导致所有两步验证永久丢失。</string>
+    <string name="onboarding_recovery_codes">请在各网站开启两步验证时，务必保存好恢复码（recovery codes）。</string>
+    <string name="onboarding_acknowledge">我已了解以上风险</string>
+
+    <!-- PIN setup -->
+    <string name="pin_setup_title">设置 PIN</string>
+    <string name="pin_change_title">修改 PIN</string>
+    <string name="pin_setup_hint">请输入 6–12 位数字</string>
+    <string name="pin_confirm_hint">请再次输入 PIN</string>
+    <string name="pin_current_hint">请输入当前 PIN</string>
+    <string name="pin_invalid_format">PIN 必须是 6–12 位数字</string>
+    <string name="pin_mismatch">两次输入的 PIN 不一致，请重新设置</string>
+    <string name="pin_saving">正在保存…</string>
+    <string name="pin_changed">PIN 已修改</string>
+    <string name="pin_current_wrong">当前 PIN 错误</string>
+
+    <!-- Lock screen (design §41) -->
+    <string name="lock_title">请输入 PIN</string>
+    <string name="lock_unlock">解锁</string>
+    <string name="lock_use_biometric">使用生物识别解锁</string>
+    <string name="lock_wrong_pin">PIN 错误（已连续错误 %1$d 次）</string>
+    <string name="lock_locked_out">尝试次数过多，请 %1$d 秒后再试</string>
+    <string name="lock_forgot_pin">忘记 PIN？</string>
+    <string name="lock_forgot_pin_message">可以使用生物识别解锁后在设置中修改 PIN。如果无法使用生物识别，只能清除全部数据并重新开始。</string>
+
+    <!-- Biometric -->
+    <string name="biometric_title">解锁 SecureAuth</string>
+    <string name="biometric_negative">使用 PIN</string>
+    <string name="biometric_enable_title">开启生物识别解锁</string>
+
+    <!-- Vault errors (design §26.1) -->
+    <string name="vault_error_title">无法读取数据</string>
+    <string name="vault_error_key_missing">加密密钥不存在。通常是因为数据从备份或其他手机恢复而来，而密钥无法随之迁移。</string>
+    <string name="vault_error_auth_failed">数据校验失败，可能已损坏或被修改。</string>
+    <string name="vault_error_corrupted">数据文件已损坏。</string>
+    <string name="vault_error_unsupported_version">数据由更新版本的 SecureAuth 写入，请升级 App。</string>
+    <string name="vault_error_temporary">暂时无法访问数据，请稍后重试。</string>
+    <string name="vault_error_no_overwrite">原有数据没有被修改或删除。</string>
+
+    <!-- Clear all data -->
+    <string name="reset_action">清除全部数据并重新开始</string>
+    <string name="reset_title">清除全部数据？</string>
+    <string name="reset_message">所有账号和 Secret 将被永久删除且无法恢复。请确认已在各网站关闭两步验证或保存了恢复码。</string>
+    <string name="reset_confirm">永久删除</string>
+
+    <!-- Home (placeholder until M4) -->
+    <string name="home_empty">还没有账号。账号列表将在下一阶段（M4）实现。</string>
+    <string name="home_settings">设置</string>
+    <string name="home_lock">立即上锁</string>
+
+    <!-- Settings -->
+    <string name="settings_title">设置</string>
+    <string name="settings_biometric">生物识别解锁</string>
+    <string name="settings_biometric_unavailable">此设备没有可用的生物识别（未录入或不支持）</string>
+    <string name="settings_auto_lock">自动上锁</string>
+    <string name="settings_auto_lock_immediately">立即</string>
+    <string name="settings_auto_lock_30s">30 秒</string>
+    <string name="settings_auto_lock_1m">1 分钟</string>
+    <string name="settings_auto_lock_5m">5 分钟</string>
+    <string name="settings_change_pin">修改 PIN</string>
+    <string name="settings_data_warning">数据只保存在本机，不会备份。请保存好各网站的恢复码。</string>
+    <string name="settings_back">返回</string>
+    <string name="settings_save_failed">保存失败，请重试</string>
+
+    <string name="error_generic">操作失败，请重试</string>
 </resources>

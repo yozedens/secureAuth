@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Window theme; Compose draws the UI. AppCompat so BiometricPrompt's own dialog works on API < 28. -->
+    <style name="Theme.SecureAuth" parent="Theme.AppCompat.DayNight.NoActionBar" />
+</resources>
