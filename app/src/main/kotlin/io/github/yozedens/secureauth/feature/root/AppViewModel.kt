@@ -9,7 +9,6 @@ import io.github.yozedens.secureauth.core.security.PinCheck
 import io.github.yozedens.secureauth.core.settings.AppSettings
 import io.github.yozedens.secureauth.core.settings.AutoLockTimeout
 import io.github.yozedens.secureauth.core.vault.VaultState
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -57,7 +56,7 @@ data class RootUiState(
  */
 class AppViewModel(private val c: AppContainer) : ViewModel() {
 
-    private enum class Page { HOME, SETTINGS, CHANGE_PIN }
+    internal enum class Page { HOME, SETTINGS, CHANGE_PIN }
 
     private data class Local(
         /** Set when the PIN store is permanently unreadable, without ever unlocking the vault. */
@@ -84,7 +83,7 @@ class AppViewModel(private val c: AppContainer) : ViewModel() {
     init {
         viewModelScope.launch {
             c.settings.load()
-            if (c.vault.refresh() == VaultState.Locked && !keyExists()) {
+            if (c.vault.refresh() == VaultState.Locked && !keyExists(c)) {
                 // Restored from backup or transfer: data present, key gone (ADR 0001 §7).
                 local.update { it.copy(forcedError = VaultError.KeyMissing) }
             }
@@ -93,7 +92,7 @@ class AppViewModel(private val c: AppContainer) : ViewModel() {
 
     /** First launch: create the key, store the PIN, create the empty vault (design §32). */
     fun completeOnboarding(pin: CharArray) = runBusy {
-        val ok = withContext(Dispatchers.Default) {
+        val ok = withContext(c.defaultDispatcher) {
             try {
                 c.cipher.createKeyIfAbsent()
                 c.pins.setPin(pin) is VaultResult.Success && c.vault.initialize() is VaultResult.Success
@@ -106,7 +105,7 @@ class AppViewModel(private val c: AppContainer) : ViewModel() {
     }
 
     fun unlockWithPin(pin: CharArray) = runBusy {
-        val check = withContext(Dispatchers.Default) { c.pins.verify(pin) }
+        val check = withContext(c.defaultDispatcher) { c.pins.verify(pin) }
         pin.fill('\u0000')
         val message = when (check) {
             PinCheck.Correct -> null.also { unlockVault() }
@@ -118,7 +117,7 @@ class AppViewModel(private val c: AppContainer) : ViewModel() {
                 }
             is PinCheck.LockedOut -> LockMessage.LockedOut(seconds(check.remainingMillis))
             is PinCheck.Failed -> LockMessage.Error.also {
-                if (check.error.isPermanent()) local.update { it.copy(forcedError = check.error) }
+                if (check.error.isPermanent()) local.update { l -> l.copy(forcedError = check.error) }
             }
             PinCheck.NotSet -> LockMessage.Error
         }
@@ -144,7 +143,7 @@ class AppViewModel(private val c: AppContainer) : ViewModel() {
 
     fun retry() = runBusy {
         local.update { it.copy(forcedError = null, lockMessage = null) }
-        if (c.vault.refresh() == VaultState.Locked && !keyExists()) {
+        if (c.vault.refresh() == VaultState.Locked && !keyExists(c)) {
             local.update { it.copy(forcedError = VaultError.KeyMissing) }
         }
     }
@@ -157,14 +156,12 @@ class AppViewModel(private val c: AppContainer) : ViewModel() {
         it.copy(page = if (it.page == Page.CHANGE_PIN) Page.SETTINGS else Page.HOME, notice = null)
     }
 
-    fun dismissNotice() = local.update { it.copy(notice = null) }
-
     fun setBiometricEnabled(enabled: Boolean) = saveSettings { it.copy(biometricEnabled = enabled) }
 
     fun setAutoLock(timeout: AutoLockTimeout) = saveSettings { it.copy(autoLock = timeout) }
 
     fun changePin(current: CharArray, new: CharArray) = runBusy {
-        val notice = withContext(Dispatchers.Default) {
+        val notice = withContext(c.defaultDispatcher) {
             when (c.pins.verify(current)) {
                 PinCheck.Correct ->
                     if (c.pins.setPin(new) is VaultResult.Success) Notice.PIN_CHANGED else Notice.SAVE_FAILED
@@ -177,18 +174,6 @@ class AppViewModel(private val c: AppContainer) : ViewModel() {
             it.copy(page = if (notice == Notice.PIN_CHANGED) Page.SETTINGS else it.page, notice = notice)
         }
     }
-
-    private suspend fun keyExists(): Boolean = withContext(Dispatchers.IO) {
-        try {
-            c.cipher.keyExists()
-        } catch (ignored: GeneralSecurityException) {
-            true // Keystore temporarily unavailable: let the normal unlock path report it.
-        } catch (ignored: IOException) {
-            true
-        }
-    }
-
-    private fun VaultError.isPermanent(): Boolean = this != VaultError.Io && this != VaultError.CryptoUnavailable
 
     private suspend fun unlockVault() {
         c.vault.unlock()
@@ -216,22 +201,33 @@ class AppViewModel(private val c: AppContainer) : ViewModel() {
             }
         }
     }
+}
 
-    private fun screenFor(vault: VaultState, page: Page): Screen = when (vault) {
-        VaultState.Unknown -> Screen.Loading
-        VaultState.Uninitialized -> Screen.Onboarding
-        VaultState.Locked -> Screen.Lock
-        is VaultState.Unreadable -> Screen.Unreadable(vault.reason)
-        VaultState.Unlocked -> when (page) {
-            Page.HOME -> Screen.Home
-            Page.SETTINGS -> Screen.Settings
-            Page.CHANGE_PIN -> Screen.ChangePin
-        }
-    }
-
-    private fun seconds(millis: Long): Int = ((millis + MILLIS_PER_SECOND - 1) / MILLIS_PER_SECOND).toInt()
-
-    private companion object {
-        const val MILLIS_PER_SECOND = 1000L
+/** Whether the vault key exists; a temporary Keystore error counts as "exists" so unlock reports it. */
+private suspend fun keyExists(c: AppContainer): Boolean = withContext(c.ioDispatcher) {
+    try {
+        c.cipher.keyExists()
+    } catch (ignored: GeneralSecurityException) {
+        true
+    } catch (ignored: IOException) {
+        true
     }
 }
+
+private fun VaultError.isPermanent(): Boolean = this != VaultError.Io && this != VaultError.CryptoUnavailable
+
+private fun screenFor(vault: VaultState, page: AppViewModel.Page): Screen = when (vault) {
+    VaultState.Unknown -> Screen.Loading
+    VaultState.Uninitialized -> Screen.Onboarding
+    VaultState.Locked -> Screen.Lock
+    is VaultState.Unreadable -> Screen.Unreadable(vault.reason)
+    VaultState.Unlocked -> when (page) {
+        AppViewModel.Page.HOME -> Screen.Home
+        AppViewModel.Page.SETTINGS -> Screen.Settings
+        AppViewModel.Page.CHANGE_PIN -> Screen.ChangePin
+    }
+}
+
+private const val MILLIS_PER_SECOND = 1000L
+
+private fun seconds(millis: Long): Int = ((millis + MILLIS_PER_SECOND - 1) / MILLIS_PER_SECOND).toInt()

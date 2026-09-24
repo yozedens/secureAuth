@@ -10,6 +10,7 @@ import io.github.yozedens.secureauth.core.vault.VaultRepository
 import io.github.yozedens.secureauth.data.vault.DataStoreVaultStore
 import io.github.yozedens.secureauth.security.biometric.BiometricAuthenticator
 import io.github.yozedens.secureauth.security.keystore.KeystoreAeadCipher
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -19,12 +20,18 @@ import java.time.Clock
  * Manual dependency container (design §48). Everything is lazy: no Keystore or file I/O
  * happens in Application.onCreate.
  */
-class AppContainer(context: Context) {
+class AppContainer(
+    context: Context,
+    /** For Keystore and file access. */
+    val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    /** For CPU-bound work such as PIN hashing. */
+    val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
+) {
 
     private val appContext = context.applicationContext
 
     /** Outlives screens: DataStore actors and the clipboard timer run here. */
-    val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    val applicationScope = CoroutineScope(SupervisorJob() + ioDispatcher)
 
     val cipher: KeystoreAeadCipher by lazy { KeystoreAeadCipher() }
 

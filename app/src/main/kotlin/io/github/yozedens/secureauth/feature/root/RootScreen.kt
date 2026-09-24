@@ -57,27 +57,7 @@ fun RootScreen(viewModel: AppViewModel, biometric: BiometricAuthenticator) {
             onReset = viewModel::resetAll,
         )
         Screen.Home -> HomeScreen(onOpenSettings = viewModel::openSettings, onLockNow = viewModel::lockNow)
-        Screen.Settings -> {
-            BackHandler(onBack = viewModel::back)
-            SettingsScreen(
-                settings = state.settings,
-                biometricAvailable = biometricAvailable,
-                errorText = noticeText(state.notice),
-                onBiometricToggle = { enable ->
-                    if (!enable) {
-                        viewModel.setBiometricEnabled(false)
-                    } else {
-                        // Confirm the user can actually pass the prompt before relying on it.
-                        biometric.authenticate(activity, biometricTitle, biometricNegative) { result ->
-                            if (result == BiometricAuthenticator.Result.SUCCESS) viewModel.setBiometricEnabled(true)
-                        }
-                    }
-                },
-                onAutoLockChange = viewModel::setAutoLock,
-                onChangePin = viewModel::openChangePin,
-                onBack = viewModel::back,
-            )
-        }
+        Screen.Settings -> SettingsRoute(state, viewModel, biometric, biometricAvailable)
         Screen.ChangePin -> {
             BackHandler(onBack = viewModel::back)
             PinSetupScreen(
@@ -91,6 +71,37 @@ fun RootScreen(viewModel: AppViewModel, biometric: BiometricAuthenticator) {
             )
         }
     }
+}
+
+/** Settings with biometric enabling confirmed by a successful prompt first. */
+@Composable
+private fun SettingsRoute(
+    state: RootUiState,
+    viewModel: AppViewModel,
+    biometric: BiometricAuthenticator,
+    biometricAvailable: Boolean,
+) {
+    val activity = LocalContext.current as FragmentActivity
+    val biometricTitle = stringResource(R.string.biometric_title)
+    val biometricNegative = stringResource(R.string.biometric_negative)
+    BackHandler(onBack = viewModel::back)
+    SettingsScreen(
+        settings = state.settings,
+        biometricAvailable = biometricAvailable,
+        errorText = noticeText(state.notice),
+        onBiometricToggle = { enable ->
+            if (!enable) {
+                viewModel.setBiometricEnabled(false)
+            } else {
+                biometric.authenticate(activity, biometricTitle, biometricNegative) { result ->
+                    if (result == BiometricAuthenticator.Result.SUCCESS) viewModel.setBiometricEnabled(true)
+                }
+            }
+        },
+        onAutoLockChange = viewModel::setAutoLock,
+        onChangePin = viewModel::openChangePin,
+        onBack = viewModel::back,
+    )
 }
 
 @Composable
