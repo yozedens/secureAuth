@@ -629,6 +629,7 @@ interface OtpCodeService {
 ```
 
 - Secret 只进不出：Repository 对上层只暴露 `AccountMeta` 与算好的 `OtpCode`。
+- 实现：两个接口的逻辑合并在 `:core` 的 `VaultRepository` 中（可在 JVM 上完整测试）；`:app` 只提供 `VaultStore`（DataStore 实现，只存密文）与 `KeystoreAeadCipher`。
 - Repository 不负责 UI 行为。
 
 数据路径：

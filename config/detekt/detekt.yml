@@ -34,6 +34,11 @@ complexity:
   LongParameterList:
     # Domain models such as OtpUri legitimately carry seven fields.
     constructorThreshold: 8
+    # Serialization DTOs mirror the stored format field by field.
+    ignoreAnnotated: ['Serializable']
+  TooManyFunctions:
+    # Repositories expose one function per operation.
+    thresholdInClasses: 16
 
 naming:
   FunctionNaming:
