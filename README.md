@@ -24,7 +24,7 @@
 scripts/check-apk.sh app/build/outputs/apk/release/app-release-unsigned.apk
 ```
 
-`scripts/check-apk.sh` 检查最终 APK：无 INTERNET / ACCESS_NETWORK_STATE 权限、`allowBackup=false`、声明了 `dataExtractionRules`、非 debuggable。
+`scripts/check-apk.sh`（基于 `aapt2`）检查最终 APK：无 INTERNET / ACCESS_NETWORK_STATE 权限、`allowBackup=false`、声明了 `dataExtractionRules`、非 debuggable。
 
 ## 安全约定
 
