@@ -1,0 +1,9 @@
+# Keep script line endings stable on Windows checkouts (core.autocrlf=true would
+# otherwise give shell scripts CRLF, which breaks them in Git Bash).
+*.sh        text eol=lf
+gradlew     text eol=lf
+*.py        text eol=lf
+*.bat       text eol=crlf
+*.ps1       text eol=crlf
+*.png       binary
+*.jar       binary

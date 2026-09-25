@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(**/keystore.properties)",
+      "Read(**/*.jks)",
+      "Read(**/*.keystore)",
+      "Read(~/**/*.jks)",
+      "Read(~/**/*.keystore)",
+      "Edit(**/keystore.properties)",
+      "Edit(**/*.jks)",
+      "Edit(**/*.keystore)",
+      "Bash(keytool *)",
+      "Bash(keytool.exe *)",
+      "Bash(*keytool* -genkey*)",
+      "Bash(cat *keystore.properties*)",
+      "Bash(type *keystore.properties*)",
+      "Bash(more *keystore.properties*)",
+      "Bash(Get-Content *keystore.properties*)",
+      "Bash(base64 *.jks*)",
+      "PowerShell(keytool *)",
+      "PowerShell(*keytool* -genkey*)",
+      "PowerShell(Get-Content *keystore.properties*)",
+      "PowerShell(cat *keystore.properties*)",
+      "PowerShell(type *keystore.properties*)"
+    ]
+  }
+}

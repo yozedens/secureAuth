@@ -9,6 +9,8 @@
 
 生成可发布的安装包（签名、发布）见另一篇：[`guide-build-release.md`](guide-build-release.md)。
 
+> **Windows 用户也可以让本机 Claude Code 代劳**：`scripts\setup-android-sdk.ps1` 能在不装 Android Studio 的情况下装好 JDK、SDK 和模拟器，见 [`guide-claude-code-windows.md`](guide-claude-code-windows.md)。
+
 > 读法建议：按顺序做，每节末尾都有“检查点”，确认通过再往下走。遇到问题先看第 10 节“常见问题”。
 
 ---

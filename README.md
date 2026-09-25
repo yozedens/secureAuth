@@ -16,6 +16,7 @@
 
 - 开发与测试环境搭建（安装 Android Studio / SDK、模拟器、真机测试）：[`docs/guide-dev-environment.md`](docs/guide-dev-environment.md)
 - 本地打包、签名与发布：[`docs/guide-build-release.md`](docs/guide-build-release.md)
+- 用本机 Claude Code 自动安装环境、编译测试（Windows）：[`docs/guide-claude-code-windows.md`](docs/guide-claude-code-windows.md)
 
 ## 构建
 
