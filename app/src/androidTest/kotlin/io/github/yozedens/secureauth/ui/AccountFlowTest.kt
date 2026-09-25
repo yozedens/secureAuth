@@ -46,7 +46,7 @@ class AccountFlowTest {
             compose.waitForText("287 082")
             compose.click(str(R.string.accounts_copy))
             compose.waitForText(str(R.string.accounts_copied))
-            assertEquals("287082", clipboardText())
+            compose.awaitClipboard("287082")
 
             compose.click(str(R.string.accounts_edit))
             compose.replace(str(R.string.manual_issuer), "RenamedCorp")
@@ -107,7 +107,7 @@ class AccountFlowTest {
 
             compose.click(str(R.string.accounts_copy))
             compose.waitForText(str(R.string.accounts_copied))
-            assertEquals("755224", clipboardText())
+            compose.awaitClipboard("755224")
             compose.waitForText(str(R.string.accounts_counter, 1))
             assertEquals(OtpKind.Hotp(1), app.container.vault.accounts.value.single().kind)
 

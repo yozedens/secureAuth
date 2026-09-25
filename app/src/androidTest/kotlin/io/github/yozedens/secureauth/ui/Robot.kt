@@ -95,7 +95,14 @@ fun ComposeTestRule.addManually(issuer: String, account: String, secret: String,
     waitUntilGone(str(R.string.confirm_title))
 }
 
-fun clipboardText(): String? {
+/**
+ * Android 10+ lets only the focused app read the clipboard, and on 13+ the system's
+ * clipboard overlay takes focus for a few seconds right after a copy, so poll.
+ */
+fun ComposeTestRule.awaitClipboard(expected: String) =
+    await("the clipboard to hold the copied code") { clipboardText() == expected }
+
+private fun clipboardText(): String? {
     var text: String? = null
     InstrumentationRegistry.getInstrumentation().runOnMainSync {
         val clipboard = context.getSystemService(ClipboardManager::class.java)
