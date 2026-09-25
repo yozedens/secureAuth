@@ -3,16 +3,19 @@ package io.github.yozedens.secureauth.ui
 import android.content.ClipboardManager
 import android.content.Context
 import androidx.annotation.StringRes
+import androidx.compose.ui.test.ComposeTimeoutException
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
+import androidx.compose.ui.test.printToString
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import io.github.yozedens.secureauth.R
@@ -24,15 +27,27 @@ private val context: Context get() = ApplicationProvider.getApplicationContext()
 
 fun str(@StringRes id: Int, vararg args: Any): String = context.getString(id, *args)
 
-fun ComposeTestRule.waitFor(matcher: SemanticsMatcher) {
-    waitUntil(TIMEOUT_MILLIS) { onAllNodes(matcher).fetchSemanticsNodes().isNotEmpty() }
+fun ComposeTestRule.waitFor(matcher: SemanticsMatcher) =
+    await("node ${matcher.description}") { onAllNodes(matcher).fetchSemanticsNodes().isNotEmpty() }
+
+/** Waits for [condition]; on timeout, names what was awaited and dumps every window's tree. */
+fun ComposeTestRule.await(what: String, condition: () -> Boolean) {
+    try {
+        waitUntil(TIMEOUT_MILLIS, condition)
+    } catch (timeout: ComposeTimeoutException) {
+        val screen = try {
+            onAllNodes(isRoot()).printToString()
+        } catch (ignored: Throwable) {
+            "<semantics tree unavailable>"
+        }
+        throw AssertionError("Timed out waiting for $what. Screen:\n$screen", timeout)
+    }
 }
 
 fun ComposeTestRule.waitForText(text: String) = waitFor(hasText(text))
 
-fun ComposeTestRule.waitUntilGone(text: String) {
-    waitUntil(TIMEOUT_MILLIS) { onAllNodes(hasText(text)).fetchSemanticsNodes().isEmpty() }
-}
+fun ComposeTestRule.waitUntilGone(text: String) =
+    await("\"$text\" to disappear") { onAllNodes(hasText(text)).fetchSemanticsNodes().isEmpty() }
 
 fun ComposeTestRule.click(text: String) {
     waitForText(text)

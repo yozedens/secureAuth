@@ -99,3 +99,13 @@ jobs:
           arch: x86_64
           disable-animations: true
           script: ./gradlew :app:connectedDebugAndroidTest
+
+      - name: Upload instrumented test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: instrumented-reports-api${{ matrix.api-level }}
+          path: |
+            app/build/reports/androidTests/
+            app/build/outputs/androidTest-results/
+          retention-days: 7

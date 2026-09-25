@@ -74,13 +74,13 @@ class AccountFlowTest {
             // Enabling biometrics requires one successful prompt first.
             compose.click(str(R.string.home_settings))
             compose.toggle()
-            compose.waitUntil(TIMEOUT_MILLIS) { app.biometric.prompts.get() == 1 }
+            compose.await("first biometric prompt") { app.biometric.prompts.get() == 1 }
             compose.waitFor(isToggleable() and isOn())
             compose.click(str(R.string.settings_back))
 
             // Locking shows the lock screen, which prompts on its own; the fake succeeds.
             compose.click(str(R.string.home_lock))
-            compose.waitUntil(TIMEOUT_MILLIS) { app.biometric.prompts.get() >= 2 }
+            compose.await("biometric prompt on the lock screen") { app.biometric.prompts.get() >= 2 }
             compose.waitForText(str(R.string.accounts_empty))
 
             compose.click(str(R.string.accounts_add))
