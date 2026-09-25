@@ -269,6 +269,8 @@ HarmonyOS NEXT（5.0 及以上）不运行 APK，不在支持与测试范围内�
 
 ## 5.2 安全检查清单（T6.3 使用）
 
+逐项的验证方式与记录表见 `docs/security-checklist.md`。
+
 - [ ] 合并后 Manifest：无 INTERNET、无意外导出组件、`allowBackup=false`、`dataExtractionRules` 生效
 - [ ] APK 中无测试密钥以外的 Secret（`strings` / grep）
 - [ ] 数据目录文件无 secret / issuer / 账号名明文
@@ -284,6 +286,8 @@ HarmonyOS NEXT（5.0 及以上）不运行 APK，不在支持与测试范围内�
 - 设计变更：更新 `docs/SecureAuth-v0.1-design.md` 并记录在 §66
 - 架构决策：`docs/adr/`
 - 测试用例表：`docs/test-cases.md`（T6.2 前完成，供真机矩阵逐项执行）
+- 安全检查表：`docs/security-checklist.md`（T6.3）
+- 测试二维码集：`testdata/qr/`，由 `scripts/gen-test-qr.py` 生成
 
 ## 5.4 风险与缓解
 

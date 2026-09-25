@@ -54,7 +54,7 @@ class AccountListViewModel(private val c: AppContainer) : ViewModel() {
 
     private data class Flags(val busy: Boolean = false, val lastCopiedId: String? = null)
 
-    private val ticks = Ticker(System::currentTimeMillis).ticks()
+    private val ticks = Ticker(c.clock::millis).ticks()
 
     val uiState: StateFlow<AccountListUiState> =
         combine(c.vault.accounts, ticks, query, hotpCodes, flags) { accounts, now, q, hotp, f ->

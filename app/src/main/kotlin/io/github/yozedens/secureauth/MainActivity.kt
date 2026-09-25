@@ -49,6 +49,7 @@ class MainActivity : FragmentActivity() {
                     viewModel = viewModel,
                     viewModels = UnlockedViewModels(accountListViewModel, addAccountViewModel, editAccountViewModel),
                     biometric = container.biometric,
+                    scanner = container.scanner,
                 )
             }
         }

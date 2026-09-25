@@ -20,6 +20,7 @@ import io.github.yozedens.secureauth.feature.lock.LockScreen
 import io.github.yozedens.secureauth.feature.lock.VaultErrorScreen
 import io.github.yozedens.secureauth.feature.onboarding.OnboardingScreen
 import io.github.yozedens.secureauth.feature.onboarding.PinSetupScreen
+import io.github.yozedens.secureauth.feature.scanner.CodeScanner
 import io.github.yozedens.secureauth.feature.settings.SettingsScreen
 import io.github.yozedens.secureauth.security.biometric.BiometricAuthenticator
 
@@ -32,6 +33,7 @@ fun RootScreen(
     viewModel: AppViewModel,
     viewModels: UnlockedViewModels,
     biometric: BiometricAuthenticator,
+    scanner: CodeScanner,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val activity = checkNotNull(LocalActivity.current) as FragmentActivity
@@ -62,7 +64,15 @@ fun RootScreen(
             onRetry = viewModel::retry,
             onReset = viewModel::resetAll,
         )
-        is Screen.Unlocked -> UnlockedRoute(screen.page, state, viewModel, viewModels, biometric, biometricAvailable)
+        is Screen.Unlocked -> UnlockedRoute(
+            page = screen.page,
+            state = state,
+            viewModel = viewModel,
+            viewModels = viewModels,
+            biometric = biometric,
+            biometricAvailable = biometricAvailable,
+            scanner = scanner,
+        )
     }
 }
 
@@ -81,6 +91,7 @@ private fun UnlockedRoute(
     viewModels: UnlockedViewModels,
     biometric: BiometricAuthenticator,
     biometricAvailable: Boolean,
+    scanner: CodeScanner,
 ) {
     when (page) {
         Page.Home -> HomeRoute(viewModel, viewModels.accounts, viewModels.edit)
@@ -98,7 +109,8 @@ private fun UnlockedRoute(
             )
         }
         is Page.Edit -> EditRoute(viewModel, viewModels.edit)
-        Page.AddMenu, Page.Scan, Page.ManualEntry, Page.Confirm -> AddFlowRoute(page, viewModel, viewModels.add)
+        Page.AddMenu, Page.Scan, Page.ManualEntry, Page.Confirm ->
+            AddFlowRoute(page, viewModel, viewModels.add, scanner)
     }
 }
 

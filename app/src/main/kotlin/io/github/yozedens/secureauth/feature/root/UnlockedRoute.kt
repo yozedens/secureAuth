@@ -16,6 +16,7 @@ import io.github.yozedens.secureauth.feature.addaccount.ManualEntryScreen
 import io.github.yozedens.secureauth.feature.addaccount.message
 import io.github.yozedens.secureauth.feature.edit.EditAccountScreen
 import io.github.yozedens.secureauth.feature.edit.EditAccountViewModel
+import io.github.yozedens.secureauth.feature.scanner.CodeScanner
 import io.github.yozedens.secureauth.feature.scanner.ScanScreen
 import kotlinx.coroutines.launch
 
@@ -24,7 +25,7 @@ import kotlinx.coroutines.launch
  * view-models' memory only; pages carry at most an account id, never a secret.
  */
 @Composable
-fun AddFlowRoute(page: Page, viewModel: AppViewModel, addViewModel: AddAccountViewModel) {
+fun AddFlowRoute(page: Page, viewModel: AppViewModel, addViewModel: AddAccountViewModel, scanner: CodeScanner) {
     val add by addViewModel.state.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val leave = {
@@ -47,6 +48,7 @@ fun AddFlowRoute(page: Page, viewModel: AppViewModel, addViewModel: AddAccountVi
             onBack = leave,
         )
         Page.Scan -> ScanScreen(
+            scanner = scanner,
             problemText = add.scanProblem?.let { stringResource(it.message()) },
             onResult = { text -> scope.launch { if (addViewModel.onScanned(text)) viewModel.navigate(Page.Confirm) } },
             onCancel = viewModel::back,

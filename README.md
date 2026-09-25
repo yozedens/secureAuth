@@ -25,7 +25,18 @@
 scripts/check-apk.sh app/build/outputs/apk/release/app-release-unsigned.apk
 ```
 
-`scripts/check-apk.sh`（基于 `aapt2`）检查最终 APK：无 INTERNET / ACCESS_NETWORK_STATE 权限、`allowBackup=false`、声明了 `dataExtractionRules`、非 debuggable。
+`scripts/check-apk.sh`（基于 `aapt2`）检查最终 APK：无 INTERNET / ACCESS_NETWORK_STATE 权限、权限只含白名单、除启动 Activity 外无未受保护的导出组件、`allowBackup=false`、声明了 `dataExtractionRules`、非 debuggable。
+
+## 测试
+
+```bash
+./gradlew :app:connectedDebugAndroidTest   # 设备 / 模拟器上的集成与界面测试
+```
+
+- 界面测试（设计 §50.8）通过 `AppContainer` 注入假时钟、假生物识别和假相机帧，使用真实 Keystore 与 DataStore；**运行时会清除 debug 包的数据和密钥**，不要在装有自用数据的手机上运行
+- CI 在手动触发（Actions → CI → Run workflow）或每晚定时时，于 API 26 / 35 模拟器上运行
+- 真机测试：`docs/test-cases.md`；安全检查：`docs/security-checklist.md`
+- 测试二维码：`testdata/qr/`（由 `scripts/gen-test-qr.py` 生成，只含测试密钥）
 
 ## 下载测试包
 

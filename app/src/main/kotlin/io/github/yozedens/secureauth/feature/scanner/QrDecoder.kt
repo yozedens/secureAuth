@@ -24,6 +24,8 @@ object QrDecoder {
     private val hints = mapOf(
         DecodeHintType.POSSIBLE_FORMATS to listOf(BarcodeFormat.QR_CODE),
         DecodeHintType.TRY_HARDER to true,
+        // otpauth URIs are UTF-8; without this ZXing may guess Shift_JIS for non-ASCII labels.
+        DecodeHintType.CHARACTER_SET to "UTF-8",
     )
 
     /** Decodes the luminance (Y) plane of a camera frame. Does not close [image]. */
@@ -31,18 +33,15 @@ object QrDecoder {
         val plane = image.planes[0]
         val buffer = plane.buffer.duplicate()
         val data = ByteArray(buffer.remaining()).also { buffer.get(it) }
-        val source = PlanarYUVLuminanceSource(
-            data,
-            plane.rowStride,
-            image.height,
-            0,
-            0,
-            image.width,
-            image.height,
-            false,
-        )
-        return decode(source)
+        return decodeLuminance(data, plane.rowStride, image.width, image.height)
     }
+
+    /**
+     * Decodes an 8-bit luminance frame laid out like a camera Y plane. Also the entry point
+     * for the fake camera frames in UI tests (design §50.8).
+     */
+    fun decodeLuminance(data: ByteArray, rowStride: Int, width: Int, height: Int): String? =
+        decode(PlanarYUVLuminanceSource(data, rowStride, height, 0, 0, width, height, false))
 
     /** Result of decoding a picked image. */
     sealed interface ImageResult {

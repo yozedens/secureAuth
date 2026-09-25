@@ -18,6 +18,32 @@ echo "$perms"
 
 manifest="$("$AAPT2" dump xmltree --file AndroidManifest.xml "$apk")"
 
+# Prints "<tag> <name>" for each component that is exported and has no android:permission.
+exported_components() {
+    awk '
+        function flush() {
+            if (comp != "" && exported && !perm) print comp " " name
+            comp = ""
+        }
+        /^ *E: / {
+            match($0, /^ */); ind = RLENGTH
+            if (comp != "" && ind <= cind) flush()
+            if ($2 ~ /^(activity|activity-alias|service|receiver|provider)$/) {
+                comp = $2; cind = ind; name = ""; exported = 0; perm = 0
+            }
+            next
+        }
+        /^ *A: / && comp != "" {
+            match($0, /^ */)
+            if (RLENGTH != cind + 2) next
+            if ($0 ~ /:name\(/) { n = $0; sub(/.*:name\([^)]*\)="/, "", n); sub(/".*/, "", n); name = n }
+            if ($0 ~ /:exported\(/ && $0 ~ /=(true|0xffffffff)/) exported = 1
+            if ($0 ~ /:permission\(/) perm = 1
+        }
+        END { flush() }
+    '
+}
+
 fail=0
 for forbidden in android.permission.INTERNET android.permission.ACCESS_NETWORK_STATE; do
     if grep -q "'$forbidden'" <<<"$perms"; then
@@ -25,6 +51,28 @@ for forbidden in android.permission.INTERNET android.permission.ACCESS_NETWORK_S
         fail=1
     fi
 done
+
+# Allowlist: any new permission (e.g. pulled in by a dependency) must be reviewed and added
+# here deliberately (plan T0.4, design §34).
+allowed_perms='^(android\.permission\.(CAMERA|USE_BIOMETRIC|USE_FINGERPRINT)|.*\.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION)$'
+while read -r perm; do
+    if ! grep -qE "$allowed_perms" <<<"$perm"; then
+        echo "FAIL: permission not in allowlist: $perm"
+        fail=1
+    fi
+done < <(sed -nE "s/^uses-permission: name='([^']+)'.*/\1/p" <<<"$perms")
+
+# Exported components without a protecting permission (plan §5.2). Only the launcher
+# activity may be reachable by other apps.
+exported="$(exported_components <<<"$manifest")"
+echo "Exported without permission: ${exported:-<none>}"
+while read -r component; do
+    [[ -z "$component" ]] && continue
+    if [[ "$component" != "activity io.github.yozedens.secureauth.MainActivity" ]]; then
+        echo "FAIL: unexpected exported component: $component"
+        fail=1
+    fi
+done <<<"$exported"
 
 backup_line="$(grep -E ':allowBackup\(' <<<"$manifest" || true)"
 echo "allowBackup: ${backup_line:-<missing>}"

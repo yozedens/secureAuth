@@ -8,7 +8,10 @@ import io.github.yozedens.secureauth.core.security.PinManager
 import io.github.yozedens.secureauth.core.settings.SettingsRepository
 import io.github.yozedens.secureauth.core.vault.VaultRepository
 import io.github.yozedens.secureauth.data.vault.DataStoreVaultStore
+import io.github.yozedens.secureauth.feature.scanner.CameraCodeScanner
+import io.github.yozedens.secureauth.feature.scanner.CodeScanner
 import io.github.yozedens.secureauth.security.biometric.BiometricAuthenticator
+import io.github.yozedens.secureauth.security.biometric.SystemBiometricAuthenticator
 import io.github.yozedens.secureauth.security.clipboard.SecureClipboard
 import io.github.yozedens.secureauth.security.keystore.KeystoreAeadCipher
 import kotlinx.coroutines.CoroutineDispatcher
@@ -19,7 +22,8 @@ import java.time.Clock
 
 /**
  * Manual dependency container (design §48). Everything is lazy: no Keystore or file I/O
- * happens in Application.onCreate.
+ * happens in Application.onCreate. UI tests pass fakes for the clock, biometrics and
+ * camera (design §50.8).
  */
 class AppContainer(
     context: Context,
@@ -27,6 +31,10 @@ class AppContainer(
     val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     /** For CPU-bound work such as PIN hashing. */
     val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default,
+    /** Wall clock for TOTP, timestamps and PIN backoff. */
+    val clock: Clock = Clock.systemUTC(),
+    biometricFactory: (Context) -> BiometricAuthenticator = ::SystemBiometricAuthenticator,
+    val scanner: CodeScanner = CameraCodeScanner,
 ) {
 
     private val appContext = context.applicationContext
@@ -37,7 +45,7 @@ class AppContainer(
     val cipher: KeystoreAeadCipher by lazy { KeystoreAeadCipher() }
 
     val vault: VaultRepository by lazy {
-        VaultRepository(DataStoreVaultStore(appContext, applicationScope, VAULT_FILE), cipher, Clock.systemUTC())
+        VaultRepository(DataStoreVaultStore(appContext, applicationScope, VAULT_FILE), cipher, clock)
     }
 
     /** PBKDF2 iterations calibrated on this device for new PINs (ADR 0001 §5). */
@@ -47,7 +55,7 @@ class AppContainer(
         PinManager(
             DataStoreVaultStore(appContext, applicationScope, SECURITY_FILE),
             cipher,
-            Clock.systemUTC(),
+            clock,
             iterations = { pinIterations },
         )
     }
@@ -58,7 +66,7 @@ class AppContainer(
 
     val autoLock = AutoLock(SystemClock::elapsedRealtime)
 
-    val biometric: BiometricAuthenticator by lazy { BiometricAuthenticator(appContext) }
+    val biometric: BiometricAuthenticator by lazy { biometricFactory(appContext) }
 
     val clipboard: SecureClipboard by lazy { SecureClipboard(appContext, applicationScope) }
 
