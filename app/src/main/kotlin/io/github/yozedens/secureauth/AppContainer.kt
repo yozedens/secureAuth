@@ -9,6 +9,7 @@ import io.github.yozedens.secureauth.core.settings.SettingsRepository
 import io.github.yozedens.secureauth.core.vault.VaultRepository
 import io.github.yozedens.secureauth.data.vault.DataStoreVaultStore
 import io.github.yozedens.secureauth.security.biometric.BiometricAuthenticator
+import io.github.yozedens.secureauth.security.clipboard.SecureClipboard
 import io.github.yozedens.secureauth.security.keystore.KeystoreAeadCipher
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -58,6 +59,8 @@ class AppContainer(
     val autoLock = AutoLock(SystemClock::elapsedRealtime)
 
     val biometric: BiometricAuthenticator by lazy { BiometricAuthenticator(appContext) }
+
+    val clipboard: SecureClipboard by lazy { SecureClipboard(appContext, applicationScope) }
 
     private companion object {
         const val VAULT_FILE = "vault.pb"

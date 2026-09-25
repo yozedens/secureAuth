@@ -57,8 +57,17 @@
     <string name="reset_message">所有账号和 Secret 将被永久删除且无法恢复。请确认已在各网站关闭两步验证或保存了恢复码。</string>
     <string name="reset_confirm">永久删除</string>
 
-    <!-- Home (placeholder until M4) -->
-    <string name="home_empty">还没有账号。账号列表将在下一阶段（M4）实现。</string>
+    <!-- Account list (design §18, §42) -->
+    <string name="accounts_search">搜索服务或账号</string>
+    <string name="accounts_empty">还没有账号。添加账号功能将在下一阶段（M5）实现。</string>
+    <string name="accounts_no_match">没有匹配的账号</string>
+    <string name="accounts_remaining">剩余 %1$d 秒</string>
+    <string name="accounts_counter">计数器：%1$d</string>
+    <string name="accounts_copy">复制</string>
+    <string name="accounts_copied">已复制，30 秒后自动清除</string>
+    <string name="accounts_generate">生成</string>
+    <string name="accounts_hotp_hidden">--- ---</string>
+    <string name="accounts_auto_time_off">系统时间未设为自动，验证码可能无效。请在系统设置中开启"自动确定日期和时间"。</string>
     <string name="home_settings">设置</string>
     <string name="home_lock">立即上锁</string>
 

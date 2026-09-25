@@ -8,6 +8,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import io.github.yozedens.secureauth.feature.accounts.AccountListViewModel
 import io.github.yozedens.secureauth.feature.root.AppViewModel
 import io.github.yozedens.secureauth.feature.root.RootScreen
 import io.github.yozedens.secureauth.ui.theme.SecureAuthTheme
@@ -32,7 +33,14 @@ class MainActivity : FragmentActivity() {
                 val viewModel: AppViewModel = viewModel(
                     factory = viewModelFactory { initializer { AppViewModel(container) } },
                 )
-                RootScreen(viewModel = viewModel, biometric = container.biometric)
+                val accountListViewModel: AccountListViewModel = viewModel(
+                    factory = viewModelFactory { initializer { AccountListViewModel(container) } },
+                )
+                RootScreen(
+                    viewModel = viewModel,
+                    accountListViewModel = accountListViewModel,
+                    biometric = container.biometric,
+                )
             }
         }
     }

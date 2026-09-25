@@ -13,7 +13,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.yozedens.secureauth.R
-import io.github.yozedens.secureauth.feature.home.HomeScreen
+import io.github.yozedens.secureauth.feature.accounts.AccountListScreen
+import io.github.yozedens.secureauth.feature.accounts.AccountListViewModel
 import io.github.yozedens.secureauth.feature.lock.LockScreen
 import io.github.yozedens.secureauth.feature.lock.VaultErrorScreen
 import io.github.yozedens.secureauth.feature.onboarding.OnboardingScreen
@@ -26,7 +27,11 @@ import io.github.yozedens.secureauth.security.biometric.BiometricAuthenticator
  * vault state. Nothing sensitive is composed while locked.
  */
 @Composable
-fun RootScreen(viewModel: AppViewModel, biometric: BiometricAuthenticator) {
+fun RootScreen(
+    viewModel: AppViewModel,
+    accountListViewModel: AccountListViewModel,
+    biometric: BiometricAuthenticator,
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val activity = checkNotNull(LocalActivity.current) as FragmentActivity
     val biometricTitle = stringResource(R.string.biometric_title)
@@ -56,7 +61,11 @@ fun RootScreen(viewModel: AppViewModel, biometric: BiometricAuthenticator) {
             onRetry = viewModel::retry,
             onReset = viewModel::resetAll,
         )
-        Screen.Home -> HomeScreen(onOpenSettings = viewModel::openSettings, onLockNow = viewModel::lockNow)
+        Screen.Home -> AccountListScreen(
+            viewModel = accountListViewModel,
+            onOpenSettings = viewModel::openSettings,
+            onLockNow = viewModel::lockNow,
+        )
         Screen.Settings -> SettingsRoute(state, viewModel, biometric, biometricAvailable)
         Screen.ChangePin -> {
             BackHandler(onBack = viewModel::back)

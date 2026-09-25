@@ -178,7 +178,7 @@ class VaultRepositoryTest {
         repo.lock()
         assertEquals(VaultState.Locked, repo.state.value)
         assertTrue(repo.accounts.value.isEmpty())
-        assertTrue(runCatching { repo.totpAt(meta.id, 0) }.isFailure)
+        assertNull(repo.totpAt(meta.id, 0))
         assertTrue(runCatching { repo.add(draft()) }.isFailure)
         ok(repo.unlock())
         assertEquals(listOf(meta), repo.accounts.value)

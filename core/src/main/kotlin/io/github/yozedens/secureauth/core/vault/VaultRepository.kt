@@ -145,9 +145,12 @@ class VaultRepository(
     suspend fun delete(id: String): VaultResult<Unit> =
         modify { accounts -> accounts.filterNot { it.meta.id == id } }.map { }
 
-    /** TOTP code at [epochMillis], or `null` if [id] is unknown or not TOTP. */
+    /**
+     * TOTP code at [epochMillis], or `null` if the vault is locked, [id] is unknown or
+     * not TOTP. Never throws, because the UI may still be rendering while the vault locks.
+     */
     suspend fun totpAt(id: String, epochMillis: Long): OtpCode? = mutex.withLock {
-        val account = requireUnlocked().firstOrNull { it.meta.id == id } ?: return@withLock null
+        val account = unlocked?.firstOrNull { it.meta.id == id } ?: return@withLock null
         val kind = account.meta.kind as? OtpKind.Totp ?: return@withLock null
         val seconds = Math.floorDiv(epochMillis, MILLIS_PER_SECOND)
         OtpCode(
