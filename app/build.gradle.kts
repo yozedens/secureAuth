@@ -66,6 +66,11 @@ dependencies {
     implementation(libs.androidx.biometric)
     // On API < 28 BiometricPrompt shows its own dialog, which needs an AppCompat theme.
     implementation(libs.androidx.appcompat)
+    // QR scanning: CameraX + ZXing (pure Java, no network, no Google Play services; design §63 decision 5).
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+    implementation(libs.zxing.core)
     implementation(libs.androidx.lifecycle.process)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)

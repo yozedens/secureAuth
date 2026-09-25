@@ -3,12 +3,14 @@ package io.github.yozedens.secureauth.feature.accounts
 import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -34,11 +36,17 @@ fun AccountListScreen(
     viewModel: AccountListViewModel,
     onOpenSettings: () -> Unit,
     onLockNow: () -> Unit,
+    onAdd: () -> Unit,
+    onEdit: (String) -> Unit,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val autoTimeOff = rememberAutoTimeOff()
 
-    Scaffold { padding ->
+    Scaffold(
+        floatingActionButton = {
+            ExtendedFloatingActionButton(onClick = onAdd) { Text(stringResource(R.string.accounts_add)) }
+        },
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -71,7 +79,7 @@ fun AccountListScreen(
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
-            AccountList(state, onCopy = viewModel::copy, onGenerate = viewModel::generateHotp)
+            AccountList(state, onCopy = viewModel::copy, onGenerate = viewModel::generateHotp, onEdit = onEdit)
         }
     }
 }
@@ -81,12 +89,15 @@ private fun AccountList(
     state: AccountListUiState,
     onCopy: (AccountUiModel) -> Unit,
     onGenerate: (String) -> Unit,
+    onEdit: (String) -> Unit,
 ) {
     when {
         state.totalCount == 0 -> Text(stringResource(R.string.accounts_empty))
         state.accounts.isEmpty() -> Text(stringResource(R.string.accounts_no_match))
         else -> LazyColumn(
             verticalArrangement = Arrangement.spacedBy(8.dp),
+            // Keeps the last card clear of the floating add button.
+            contentPadding = PaddingValues(bottom = 88.dp),
             modifier = Modifier.fillMaxSize(),
         ) {
             items(state.accounts, key = { it.id }) { account ->
@@ -96,6 +107,7 @@ private fun AccountList(
                     busy = state.busy,
                     onCopy = { onCopy(account) },
                     onGenerate = { onGenerate(account.id) },
+                    onEdit = { onEdit(account.id) },
                 )
             }
         }

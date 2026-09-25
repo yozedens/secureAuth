@@ -32,6 +32,7 @@ fun AccountCard(
     busy: Boolean,
     onCopy: () -> Unit,
     onGenerate: () -> Unit,
+    onEdit: () -> Unit,
 ) {
     Card(
         modifier = Modifier
@@ -64,6 +65,7 @@ fun AccountCard(
                 TextButton(onClick = onCopy, enabled = account.code != null) {
                     Text(stringResource(R.string.accounts_copy))
                 }
+                TextButton(onClick = onEdit) { Text(stringResource(R.string.accounts_edit)) }
             }
             if (copied) {
                 Text(stringResource(R.string.accounts_copied), style = MaterialTheme.typography.bodySmall)

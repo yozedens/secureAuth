@@ -11,6 +11,13 @@
         android:name="android.permission.ACCESS_NETWORK_STATE"
         tools:node="remove" />
 
+    <!-- QR scanning, requested only when the scanner opens (design §39). Devices without a
+         camera can still install the app and add accounts manually. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
     <!-- No cloud backup and no device-to-device transfer (design §35). -->
     <application
         android:name=".SecureAuthApplication"

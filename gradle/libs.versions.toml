@@ -13,6 +13,8 @@ androidxDatastore = "1.1.7"
 androidxBiometric = "1.1.0"
 androidxAppcompat = "1.7.0"
 androidxLifecycle = "2.8.7"
+androidxCamera = "1.4.2"
+zxing = "3.5.3"
 androidxTestExtJunit = "1.2.1"
 androidxTestRunner = "1.6.2"
 kover = "0.9.9"
@@ -31,6 +33,10 @@ junit = { module = "junit:junit", version.ref = "junit" }
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "androidxDatastore" }
 androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "androidxBiometric" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidxAppcompat" }
+androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "androidxCamera" }
+androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "androidxCamera" }
+androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "androidxCamera" }
+zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
 androidx-lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", version.ref = "androidxLifecycle" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }

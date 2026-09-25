@@ -26,9 +26,28 @@ sealed interface Screen {
     data object Onboarding : Screen
     data object Lock : Screen
     data class Unreadable(val reason: VaultError) : Screen
-    data object Home : Screen
-    data object Settings : Screen
-    data object ChangePin : Screen
+    /** Only reachable while the vault is unlocked. */
+    data class Unlocked(val page: Page) : Screen
+}
+
+/** Pages behind the lock gate. Held in memory only; never saved (design §36). */
+sealed interface Page {
+    data object Home : Page
+    data object Settings : Page
+    data object ChangePin : Page
+    data object AddMenu : Page
+    data object ManualEntry : Page
+    data object Scan : Page
+    data object Confirm : Page
+    data class Edit(val accountId: String) : Page
+
+    /** Where "back" goes from this page. */
+    val parent: Page
+        get() = when (this) {
+            ChangePin -> Settings
+            ManualEntry, Scan, Confirm -> AddMenu
+            else -> Home
+        }
 }
 
 /** Feedback shown on the lock screen. */
@@ -56,12 +75,10 @@ data class RootUiState(
  */
 class AppViewModel(private val c: AppContainer) : ViewModel() {
 
-    internal enum class Page { HOME, SETTINGS, CHANGE_PIN }
-
     private data class Local(
         /** Set when the PIN store is permanently unreadable, without ever unlocking the vault. */
         val forcedError: VaultError? = null,
-        val page: Page = Page.HOME,
+        val page: Page = Page.Home,
         val busy: Boolean = false,
         val lockMessage: LockMessage? = null,
         val notice: Notice? = null,
@@ -148,13 +165,9 @@ class AppViewModel(private val c: AppContainer) : ViewModel() {
         }
     }
 
-    fun openSettings() = local.update { it.copy(page = Page.SETTINGS, notice = null) }
+    fun navigate(page: Page) = local.update { it.copy(page = page, notice = null) }
 
-    fun openChangePin() = local.update { it.copy(page = Page.CHANGE_PIN, notice = null) }
-
-    fun back() = local.update {
-        it.copy(page = if (it.page == Page.CHANGE_PIN) Page.SETTINGS else Page.HOME, notice = null)
-    }
+    fun back() = local.update { it.copy(page = it.page.parent, notice = null) }
 
     fun setBiometricEnabled(enabled: Boolean) = saveSettings { it.copy(biometricEnabled = enabled) }
 
@@ -171,13 +184,13 @@ class AppViewModel(private val c: AppContainer) : ViewModel() {
         current.fill('\u0000')
         new.fill('\u0000')
         local.update {
-            it.copy(page = if (notice == Notice.PIN_CHANGED) Page.SETTINGS else it.page, notice = notice)
+            it.copy(page = if (notice == Notice.PIN_CHANGED) Page.Settings else it.page, notice = notice)
         }
     }
 
     private suspend fun unlockVault() {
         c.vault.unlock()
-        local.update { it.copy(page = Page.HOME) }
+        local.update { it.copy(page = Page.Home) }
     }
 
     private fun saveSettings(transform: (AppSettings) -> AppSettings) {
@@ -216,16 +229,12 @@ private suspend fun keyExists(c: AppContainer): Boolean = withContext(c.ioDispat
 
 private fun VaultError.isPermanent(): Boolean = this != VaultError.Io && this != VaultError.CryptoUnavailable
 
-private fun screenFor(vault: VaultState, page: AppViewModel.Page): Screen = when (vault) {
+private fun screenFor(vault: VaultState, page: Page): Screen = when (vault) {
     VaultState.Unknown -> Screen.Loading
     VaultState.Uninitialized -> Screen.Onboarding
     VaultState.Locked -> Screen.Lock
     is VaultState.Unreadable -> Screen.Unreadable(vault.reason)
-    VaultState.Unlocked -> when (page) {
-        AppViewModel.Page.HOME -> Screen.Home
-        AppViewModel.Page.SETTINGS -> Screen.Settings
-        AppViewModel.Page.CHANGE_PIN -> Screen.ChangePin
-    }
+    VaultState.Unlocked -> Screen.Unlocked(page)
 }
 
 private const val MILLIS_PER_SECOND = 1000L

@@ -9,8 +9,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import io.github.yozedens.secureauth.feature.accounts.AccountListViewModel
+import io.github.yozedens.secureauth.feature.addaccount.AddAccountViewModel
+import io.github.yozedens.secureauth.feature.edit.EditAccountViewModel
 import io.github.yozedens.secureauth.feature.root.AppViewModel
 import io.github.yozedens.secureauth.feature.root.RootScreen
+import io.github.yozedens.secureauth.feature.root.UnlockedViewModels
 import io.github.yozedens.secureauth.ui.theme.SecureAuthTheme
 
 /**
@@ -36,9 +39,15 @@ class MainActivity : FragmentActivity() {
                 val accountListViewModel: AccountListViewModel = viewModel(
                     factory = viewModelFactory { initializer { AccountListViewModel(container) } },
                 )
+                val addAccountViewModel: AddAccountViewModel = viewModel(
+                    factory = viewModelFactory { initializer { AddAccountViewModel(container) } },
+                )
+                val editAccountViewModel: EditAccountViewModel = viewModel(
+                    factory = viewModelFactory { initializer { EditAccountViewModel(container) } },
+                )
                 RootScreen(
                     viewModel = viewModel,
-                    accountListViewModel = accountListViewModel,
+                    viewModels = UnlockedViewModels(accountListViewModel, addAccountViewModel, editAccountViewModel),
                     biometric = container.biometric,
                 )
             }

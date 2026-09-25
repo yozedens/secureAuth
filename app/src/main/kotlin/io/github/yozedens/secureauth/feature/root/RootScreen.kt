@@ -13,8 +13,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.yozedens.secureauth.R
-import io.github.yozedens.secureauth.feature.accounts.AccountListScreen
 import io.github.yozedens.secureauth.feature.accounts.AccountListViewModel
+import io.github.yozedens.secureauth.feature.addaccount.AddAccountViewModel
+import io.github.yozedens.secureauth.feature.edit.EditAccountViewModel
 import io.github.yozedens.secureauth.feature.lock.LockScreen
 import io.github.yozedens.secureauth.feature.lock.VaultErrorScreen
 import io.github.yozedens.secureauth.feature.onboarding.OnboardingScreen
@@ -29,7 +30,7 @@ import io.github.yozedens.secureauth.security.biometric.BiometricAuthenticator
 @Composable
 fun RootScreen(
     viewModel: AppViewModel,
-    accountListViewModel: AccountListViewModel,
+    viewModels: UnlockedViewModels,
     biometric: BiometricAuthenticator,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -61,13 +62,30 @@ fun RootScreen(
             onRetry = viewModel::retry,
             onReset = viewModel::resetAll,
         )
-        Screen.Home -> AccountListScreen(
-            viewModel = accountListViewModel,
-            onOpenSettings = viewModel::openSettings,
-            onLockNow = viewModel::lockNow,
-        )
-        Screen.Settings -> SettingsRoute(state, viewModel, biometric, biometricAvailable)
-        Screen.ChangePin -> {
+        is Screen.Unlocked -> UnlockedRoute(screen.page, state, viewModel, viewModels, biometric, biometricAvailable)
+    }
+}
+
+/** View-models for the pages behind the lock gate. */
+class UnlockedViewModels(
+    val accounts: AccountListViewModel,
+    val add: AddAccountViewModel,
+    val edit: EditAccountViewModel,
+)
+
+@Composable
+private fun UnlockedRoute(
+    page: Page,
+    state: RootUiState,
+    viewModel: AppViewModel,
+    viewModels: UnlockedViewModels,
+    biometric: BiometricAuthenticator,
+    biometricAvailable: Boolean,
+) {
+    when (page) {
+        Page.Home -> HomeRoute(viewModel, viewModels.accounts, viewModels.edit)
+        Page.Settings -> SettingsRoute(state, viewModel, biometric, biometricAvailable)
+        Page.ChangePin -> {
             BackHandler(onBack = viewModel::back)
             PinSetupScreen(
                 title = stringResource(R.string.pin_change_title),
@@ -79,6 +97,8 @@ fun RootScreen(
                 externalError = noticeText(state.notice),
             )
         }
+        is Page.Edit -> EditRoute(viewModel, viewModels.edit)
+        Page.AddMenu, Page.Scan, Page.ManualEntry, Page.Confirm -> AddFlowRoute(page, viewModel, viewModels.add)
     }
 }
 
@@ -108,7 +128,7 @@ private fun SettingsRoute(
             }
         },
         onAutoLockChange = viewModel::setAutoLock,
-        onChangePin = viewModel::openChangePin,
+        onChangePin = { viewModel.navigate(Page.ChangePin) },
         onBack = viewModel::back,
     )
 }

@@ -59,7 +59,7 @@
 
     <!-- Account list (design §18, §42) -->
     <string name="accounts_search">搜索服务或账号</string>
-    <string name="accounts_empty">还没有账号。添加账号功能将在下一阶段（M5）实现。</string>
+    <string name="accounts_empty">还没有账号。点击"添加"扫描网站的二维码或手工输入密钥。</string>
     <string name="accounts_no_match">没有匹配的账号</string>
     <string name="accounts_remaining">剩余 %1$d 秒</string>
     <string name="accounts_counter">计数器：%1$d</string>
@@ -86,4 +86,73 @@
     <string name="settings_save_failed">保存失败，请重试</string>
 
     <string name="error_generic">操作失败，请重试</string>
+
+    <!-- Add account (design §43) -->
+    <string name="accounts_add">添加</string>
+    <string name="add_title">添加账号</string>
+    <string name="add_scan">扫描二维码</string>
+    <string name="add_from_image">从图片识别</string>
+    <string name="add_manual">手工添加</string>
+    <string name="add_no_qr_in_image">图片中没有找到二维码</string>
+    <string name="add_image_unreadable">无法读取这张图片</string>
+    <string name="add_invalid_qr">二维码不是有效的认证器二维码</string>
+    <string name="add_migration_unsupported">暂不支持从 Google Authenticator 导入，请在各网站重新绑定</string>
+
+    <!-- Scanner (design §16, §39) -->
+    <string name="scan_title">扫描二维码</string>
+    <string name="scan_hint">将网站提供的两步验证二维码放入取景框</string>
+    <string name="scan_permission_rationale">扫描二维码需要使用相机。相机画面只在本机处理，不会保存或上传。</string>
+    <string name="scan_permission_grant">允许使用相机</string>
+    <string name="scan_permission_denied">相机权限已被拒绝。可以在系统设置中开启，或改用手工添加 / 从图片识别。</string>
+    <string name="scan_open_settings">打开系统设置</string>
+    <string name="scan_no_camera">此设备没有可用的相机</string>
+
+    <!-- Manual entry (design §17) -->
+    <string name="manual_type">类型</string>
+    <string name="manual_issuer">服务名称</string>
+    <string name="manual_account">账号</string>
+    <string name="manual_secret">密钥（Secret）</string>
+    <string name="manual_show_secret">显示</string>
+    <string name="manual_hide_secret">隐藏</string>
+    <string name="manual_advanced">高级选项</string>
+    <string name="manual_algorithm">算法</string>
+    <string name="manual_digits">位数</string>
+    <string name="manual_period">周期（秒）</string>
+    <string name="manual_counter">计数器</string>
+    <string name="manual_next">下一步</string>
+    <string name="error_name_required">服务名称和账号至少填写一项</string>
+    <string name="error_secret_empty">请输入密钥</string>
+    <string name="error_secret_lookalike">密钥包含 0、1、8 或 9，请检查是否把字母 O、I、B 输成了数字</string>
+    <string name="error_secret_invalid">密钥包含无效字符</string>
+    <string name="error_secret_length">密钥长度不正确，请检查是否漏输或多输</string>
+    <string name="error_secret_too_long">密钥过长</string>
+    <string name="error_digits">位数必须是 6–8</string>
+    <string name="error_period">周期必须是 1–300 秒</string>
+    <string name="error_counter">计数器必须是非负整数</string>
+
+    <!-- Confirm (design §44) -->
+    <string name="confirm_title">确认添加</string>
+    <string name="confirm_issuer">服务</string>
+    <string name="confirm_account">账号</string>
+    <string name="confirm_type">类型</string>
+    <string name="confirm_algorithm">算法</string>
+    <string name="confirm_digits">位数</string>
+    <string name="confirm_period">周期</string>
+    <string name="confirm_period_value">%1$d 秒</string>
+    <string name="confirm_counter">计数器</string>
+    <string name="confirm_duplicate">该账号可能已存在（相同的密钥）</string>
+    <string name="confirm_hotp_counter_missing">二维码未包含计数器，已默认为 0。请确认与服务端一致。</string>
+    <string name="confirm_add">添加</string>
+
+    <!-- Edit / delete (design §45, §46) -->
+    <string name="edit_title">编辑账号</string>
+    <string name="edit_params_warning">修改算法、位数、周期或计数器会导致验证码与服务端不一致，仅用于修正录入错误。</string>
+    <string name="edit_new_secret">更换密钥（留空则不变）</string>
+    <string name="edit_save">保存</string>
+    <string name="edit_saved">已保存</string>
+    <string name="edit_delete">删除账号</string>
+    <string name="delete_title">删除账号？</string>
+    <string name="delete_message">%1$s\n\n删除后密钥将无法恢复。请确认已在该网站关闭两步验证或保存了恢复码。</string>
+    <string name="delete_confirm">删除</string>
+    <string name="accounts_edit">编辑</string>
 </resources>
