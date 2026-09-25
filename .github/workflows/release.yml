@@ -1,0 +1,101 @@
+name: Release
+
+# Pushing a tag vX.Y.Z builds, signs, checks and publishes the APK (plan T7.1, docs/release.md).
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build, sign and publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: true
+
+      - name: Tag must match versionName
+        run: |
+          version="$(sed -nE 's/^ *versionName = "([^"]+)".*/\1/p' app/build.gradle.kts)"
+          if [[ "v$version" != "$GITHUB_REF_NAME" ]]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match versionName $version"
+            exit 1
+          fi
+          grep -q "^## \[$version\]" CHANGELOG.md || { echo "::error::CHANGELOG.md has no [$version] section"; exit 1; }
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Tests and static checks
+        run: ./gradlew :core:test :core:koverVerify detektMain :app:lintRelease
+
+      - name: Restore signing keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.SECUREAUTH_KEYSTORE_BASE64 }}
+        run: |
+          if [[ -z "$KEYSTORE_BASE64" ]]; then
+            echo "::error::secret SECUREAUTH_KEYSTORE_BASE64 is not set (see docs/release.md)"
+            exit 1
+          fi
+          base64 -d <<<"$KEYSTORE_BASE64" > "$RUNNER_TEMP/release.jks"
+          echo "SECUREAUTH_KEYSTORE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+
+      - name: Build signed release APK
+        env:
+          SECUREAUTH_KEYSTORE_PASSWORD: ${{ secrets.SECUREAUTH_KEYSTORE_PASSWORD }}
+          SECUREAUTH_KEY_ALIAS: ${{ secrets.SECUREAUTH_KEY_ALIAS }}
+          SECUREAUTH_KEY_PASSWORD: ${{ secrets.SECUREAUTH_KEY_PASSWORD }}
+        run: ./gradlew :app:assembleRelease
+
+      - name: Remove keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/release.jks"
+
+      - name: Verify signature, security baseline and size
+        run: |
+          apk=app/build/outputs/apk/release/app-release.apk
+          apksigner="$(ls -d "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -n 1)"
+          "$apksigner" verify --verbose --print-certs "$apk" | tee signing.txt
+          grep -qE "Verified using v[23] scheme .*: true" signing.txt
+          scripts/check-apk.sh "$apk"
+
+      - name: Package with checksums
+        run: |
+          out="secureauth-$VERSION.apk"
+          cp app/build/outputs/apk/release/app-release.apk "$out"
+          sha256sum "$out" > "$out.sha256"
+          cert="$(sed -nE 's/^Signer #1 certificate SHA-256 digest: //p' signing.txt)"
+          {
+            awk -v v="$VERSION" '$0 ~ "^## \\[" v "\\]" {p=1; next} /^## \[/ {p=0} p' CHANGELOG.md
+            echo
+            echo "### 校验"
+            echo
+            echo '```text'
+            cat "$out.sha256"
+            echo "签名证书 SHA-256: $cert"
+            echo '```'
+            echo
+            echo "安装前请核对 APK 的 SHA-256；以后的版本必须使用同一签名证书，否则无法覆盖安装。"
+          } > notes.md
+          cat notes.md
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            "secureauth-$VERSION.apk" "secureauth-$VERSION.apk.sha256" \
+            --title "SecureAuth $VERSION" --notes-file notes.md --verify-tag

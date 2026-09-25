@@ -266,6 +266,7 @@ HarmonyOS NEXT（5.0 及以上）不运行 APK，不在支持与测试范围内�
 - 生成 release keystore，**离线保存并至少备份两份**（丢失后无法发布更新，已安装用户只能卸载重装——也就意味着数据丢失）
 - keystore 与密码不进入仓库；CI 如需签名，使用加密的 Secrets
 - 发布时附 APK 的 SHA-256，便于校验
+- 具体步骤见 `docs/release.md`
 
 ## 5.2 安全检查清单（T6.3 使用）
 

@@ -91,6 +91,15 @@ if grep -E ':debuggable\(' <<<"$manifest" | grep -qE '=(true|0xffffffff)'; then
     fail=1
 fi
 
+# Size budget (design §53): < 15 MB.
+max_bytes=$((15 * 1024 * 1024))
+size="$(stat -c %s "$apk")"
+echo "APK size: $size bytes (limit $max_bytes)"
+if (( size >= max_bytes )); then
+    echo "FAIL: APK is larger than 15 MB"
+    fail=1
+fi
+
 if [[ $fail -ne 0 ]]; then
     exit 1
 fi

@@ -44,6 +44,10 @@ scripts/check-apk.sh app/build/outputs/apk/release/app-release-unsigned.apk
 
 debug 包仅用于手动测试：它可调试、使用调试签名，与将来的 release 包签名不同，不能覆盖安装。
 
+## 发布
+
+推送 `vX.Y.Z` tag 后由 `Release` 工作流签名、检查并发布 APK（附 SHA-256 与签名证书指纹）。签名密钥的生成、备份与两种签名方式见 `docs/release.md`；变更记录见 `CHANGELOG.md`。
+
 ## 安全约定
 
 - 禁止 `android.util.Log`、`println`、`printStackTrace`（detekt 强制；release 构建由 R8 移除 Log 调用）

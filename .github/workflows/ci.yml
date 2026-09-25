@@ -45,6 +45,24 @@ jobs:
       - name: Check APK security baseline
         run: scripts/check-apk.sh app/build/outputs/apk/release/app-release-unsigned.apk
 
+      - name: Release signing dry run (throwaway key)
+        # Exercises the signing config and the checks the Release workflow runs; the key is
+        # generated here and discarded, it is never the real release key.
+        run: |
+          pass="$(openssl rand -hex 16)"
+          keytool -genkeypair -keystore "$RUNNER_TEMP/dry-run.jks" -storetype PKCS12 \
+            -keyalg RSA -keysize 2048 -validity 1 -alias dry-run \
+            -dname "CN=SecureAuth dry run" -storepass "$pass" -keypass "$pass"
+          SECUREAUTH_KEYSTORE="$RUNNER_TEMP/dry-run.jks" SECUREAUTH_KEYSTORE_PASSWORD="$pass" \
+            SECUREAUTH_KEY_ALIAS=dry-run SECUREAUTH_KEY_PASSWORD="$pass" \
+            ./gradlew :app:assembleRelease
+          rm -f "$RUNNER_TEMP/dry-run.jks"
+          apk=app/build/outputs/apk/release/app-release.apk
+          apksigner="$(ls -d "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -n 1)"
+          "$apksigner" verify --verbose --print-certs "$apk" | tee signing.txt
+          grep -qE "Verified using v[23] scheme .*: true" signing.txt
+          scripts/check-apk.sh "$apk"
+
       - name: Build debug APK for manual testing
         run: ./gradlew :app:assembleDebug
 

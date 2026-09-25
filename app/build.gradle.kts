@@ -1,10 +1,23 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 }
+
+// Release signing (plan §5.1, docs/release.md): from environment variables in CI, or from a
+// gitignored keystore.properties locally. Without either, the release APK is left unsigned.
+val keystoreProperties = Properties().apply {
+    val file = rootProject.file("keystore.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+
+fun signingValue(env: String, property: String): String? =
+    System.getenv(env)?.takeIf { it.isNotBlank() } ?: keystoreProperties.getProperty(property)
+
+val releaseStoreFile = signingValue("SECUREAUTH_KEYSTORE", "storeFile")
 
 android {
     namespace = "io.github.yozedens.secureauth"
@@ -15,12 +28,25 @@ android {
         minSdk = 26
         targetSdk = 35
         versionCode = 1
-        versionName = "0.1.0-dev"
+        // The release workflow requires the tag to equal "v" + versionName.
+        versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        if (releaseStoreFile != null) {
+            create("release") {
+                storeFile = rootProject.file(releaseStoreFile)
+                storePassword = signingValue("SECUREAUTH_KEYSTORE_PASSWORD", "storePassword")
+                keyAlias = signingValue("SECUREAUTH_KEY_ALIAS", "keyAlias")
+                keyPassword = signingValue("SECUREAUTH_KEY_PASSWORD", "keyPassword")
+            }
+        }
     }
 
     buildTypes {
         release {
+            signingConfig = signingConfigs.findByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
