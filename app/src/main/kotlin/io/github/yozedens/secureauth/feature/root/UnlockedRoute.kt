@@ -2,7 +2,6 @@ package io.github.yozedens.secureauth.feature.root
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.res.stringResource
@@ -59,19 +58,17 @@ fun AddFlowRoute(page: Page, viewModel: AppViewModel, addViewModel: AddAccountVi
             onValid = { viewModel.navigate(Page.Confirm) },
             onBack = viewModel::back,
         )
-        Page.Confirm -> {
-            val pending = add.pending
-            if (pending == null) {
-                LaunchedEffect(Unit) { viewModel.navigate(Page.AddMenu) }
-            } else {
-                ConfirmAccountScreen(
-                    viewModel = addViewModel,
-                    pending = pending,
-                    busy = add.busy,
-                    onAdded = { viewModel.navigate(Page.Home) },
-                    onCancel = leave,
-                )
-            }
+        // No pending account only transiently: right after confirm / cancel, before the
+        // navigation that follows arrives, or while locked (unlocking returns to Home).
+        // Redirecting from here would race that navigation, so render nothing.
+        Page.Confirm -> add.pending?.let { pending ->
+            ConfirmAccountScreen(
+                viewModel = addViewModel,
+                pending = pending,
+                busy = add.busy,
+                onAdded = { viewModel.navigate(Page.Home) },
+                onCancel = leave,
+            )
         }
         else -> Unit
     }
@@ -81,10 +78,8 @@ fun AddFlowRoute(page: Page, viewModel: AppViewModel, addViewModel: AddAccountVi
 fun EditRoute(viewModel: AppViewModel, editViewModel: EditAccountViewModel) {
     val form by editViewModel.state.collectAsStateWithLifecycle()
     BackHandler(onBack = viewModel::back)
-    if (form.accountId == null) {
-        LaunchedEffect(Unit) { viewModel.navigate(Page.Home) }
-        return
-    }
+    // Empty only transiently (after delete, or while locked); see Page.Confirm above.
+    if (form.accountId == null) return
     EditAccountScreen(
         viewModel = editViewModel,
         form = form,
