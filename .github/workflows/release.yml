@@ -1,6 +1,7 @@
 name: Release
 
 # Pushing a tag vX.Y.Z builds, signs, checks and publishes the APK (plan T7.1, docs/release.md).
+# Used only with CI signing; see the job condition below.
 on:
   push:
     tags: ["v*"]
@@ -15,6 +16,9 @@ concurrency:
 jobs:
   release:
     name: Build, sign and publish
+    # Opt-in: only when the repository variable SECUREAUTH_CI_SIGNING is "true". With local
+    # signing (docs/guide-build-release.md) a tag created on the release page skips this job.
+    if: vars.SECUREAUTH_CI_SIGNING == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:

@@ -9,7 +9,8 @@ set -euo pipefail
 apk="${1:?usage: $0 <apk>}"
 if [[ -z "${AAPT2:-}" ]]; then
     sdk="${ANDROID_HOME:?ANDROID_HOME not set}"
-    AAPT2="$(ls -d "$sdk"/build-tools/*/aapt2 | sort -V | tail -n 1)"
+    # aapt2.exe on Windows (Git Bash).
+    AAPT2="$(ls -d "$sdk"/build-tools/*/aapt2* | sort -V | tail -n 1)"
 fi
 echo "Using $AAPT2"
 
@@ -93,7 +94,7 @@ fi
 
 # Size budget (design §53): < 15 MB.
 max_bytes=$((15 * 1024 * 1024))
-size="$(stat -c %s "$apk")"
+size="$(wc -c < "$apk" | tr -d ' ')"
 echo "APK size: $size bytes (limit $max_bytes)"
 if (( size >= max_bytes )); then
     echo "FAIL: APK is larger than 15 MB"

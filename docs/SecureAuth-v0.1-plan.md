@@ -114,6 +114,8 @@ M3 的 ADR（T3.1）应在 M2 开始前完成（决定密钥层级与存储格�
 
 # 3. 开发环境
 
+> 逐步安装与使用说明见 [`guide-dev-environment.md`](guide-dev-environment.md)（开发 / 测试环境）与 [`guide-build-release.md`](guide-build-release.md)（打包、签名、发布）。
+
 ## 3.1 硬件
 
 | 项 | 最低 | 推荐 | 说明 |

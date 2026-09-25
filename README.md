@@ -12,9 +12,14 @@
 | `:core` | 纯 Kotlin/JVM | OTP、Base32、otpauth 解析、加密抽象；不能依赖 Android |
 | `:app` | Android 应用 | UI、存储、安全 |
 
+## 上手文档
+
+- 开发与测试环境搭建（安装 Android Studio / SDK、模拟器、真机测试）：[`docs/guide-dev-environment.md`](docs/guide-dev-environment.md)
+- 本地打包、签名与发布：[`docs/guide-build-release.md`](docs/guide-build-release.md)
+
 ## 构建
 
-需要 JDK 17+ 与 Android SDK（`platforms;android-35`）。
+需要 JDK 17+ 与 Android SDK（`platforms;android-35`），安装步骤见上方文档。
 
 ```bash
 ./gradlew :core:test            # core 单元测试
@@ -46,7 +51,7 @@ debug 包仅用于手动测试：它可调试、使用调试签名，与将来�
 
 ## 发布
 
-推送 `vX.Y.Z` tag 后由 `Release` 工作流签名、检查并发布 APK（附 SHA-256 与签名证书指纹）。签名密钥的生成、备份与两种签名方式见 `docs/release.md`；变更记录见 `CHANGELOG.md`。
+推荐本地签名：`scripts/release-local.sh` 完成测试、签名构建与校验，产物在 `dist/`，再到 GitHub 手动发布。也可以启用 CI 签名（仓库变量 `SECUREAUTH_CI_SIGNING=true`），推送 `vX.Y.Z` tag 后由 `Release` 工作流自动发布。详见 [`docs/guide-build-release.md`](docs/guide-build-release.md) 与 [`docs/release.md`](docs/release.md)；变更记录见 `CHANGELOG.md`。
 
 ## 安全约定
 
