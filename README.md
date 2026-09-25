@@ -27,6 +27,12 @@ scripts/check-apk.sh app/build/outputs/apk/release/app-release-unsigned.apk
 
 `scripts/check-apk.sh`（基于 `aapt2`）检查最终 APK：无 INTERNET / ACCESS_NETWORK_STATE 权限、`allowBackup=false`、声明了 `dataExtractionRules`、非 debuggable。
 
+## 下载测试包
+
+每次推送到 `main` 后，CI 会上传 debug APK：在 GitHub 仓库的 Actions 页面打开对应的 CI 运行，在页面底部 Artifacts 中下载 `secureauth-debug-<提交号>`（保留 14 天）。
+
+debug 包仅用于手动测试：它可调试、使用调试签名，与将来的 release 包签名不同，不能覆盖安装。
+
 ## 安全约定
 
 - 禁止 `android.util.Log`、`println`、`printStackTrace`（detekt 强制；release 构建由 R8 移除 Log 调用）
