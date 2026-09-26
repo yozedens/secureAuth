@@ -120,7 +120,23 @@ function Invoke-Sdk([string]$Tool, [string[]]$Arguments, [string]$InputText = $n
     }
     if ($Tool -eq 'avdmanager') { $all = $Arguments }
     # [string] parameters turn $null into '', so test for non-empty input.
-    if ($InputText) { $InputText | & $exe @all } else { & $exe @all }
+    if ($InputText) {
+        # Windows PowerShell opens the tool's stdin in the console input encoding and, on a
+        # UTF-8 console (code page 65001, e.g. under Claude Code), writes a BOM first; the SDK
+        # tools then read BOM + "y" instead of "y" and decline. Pipe without the BOM.
+        $savedInputEncoding = $null
+        if ([Console]::InputEncoding.GetPreamble().Length -gt 0) {
+            $savedInputEncoding = [Console]::InputEncoding
+            [Console]::InputEncoding = New-Object System.Text.UTF8Encoding $false
+        }
+        try {
+            $InputText | & $exe @all
+        } finally {
+            if ($savedInputEncoding) { [Console]::InputEncoding = $savedInputEncoding }
+        }
+    } else {
+        & $exe @all
+    }
     if ($LASTEXITCODE -ne 0) { Fail "$Tool $($Arguments -join ' ') 失败（退出码 $LASTEXITCODE）" }
 }
 
